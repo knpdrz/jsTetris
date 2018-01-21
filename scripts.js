@@ -6,12 +6,28 @@ var gameOverMessage = document.getElementById("gameOverMessage");
 var colors = ["#FF355E", "#FF9933", "#FFFF66", "#CCFF00", "#50BFE6", "FF6EFF", "FF00CC"];
 var gridColor = "white";
 var bgColor = "black";
+
 var squareSide = 30;
+
+var blockSpeed = 100; //pixels per second
 
 var boardWidth = canvas.width/squareSide;
 var boardHeight = canvas.height/squareSide;
 
 var board = [];
+
+var gameStates = ["fallen", "falling", "gameOver"];
+var gameState = gameStates[0];
+
+var currentShape;
+var shapeX, shapeY;
+var prevShapeX, prevShapeY;
+
+document.addEventListener("keydown", keyDownHandler, false);
+var now,
+    dt   = 0,
+    last = timestamp(),
+    step = 1/60;
 
 //player interaction 
 function keyDownHandler(e) {
@@ -33,10 +49,6 @@ function keyDownHandler(e) {
             break;
     }
 }
-var gameStates = ["fallen", "falling", "gameOver"];
-var gameState = gameStates[0];
-
-var currentShape;
 
 function drawSquare(x, y, color){
     ctx.beginPath();
@@ -47,94 +59,35 @@ function drawSquare(x, y, color){
 
 }
 
-function clearPrevious(){
-    //removes currentShape from where it is now
-    var actX = currentShape.row*squareSide;
-    var actY = currentShape.col*squareSide;
-    drawSquare(actY, actX, bgColor, gridColor);
-    drawEmptySquare(actY,actX,gridColor);
-    
-}
 
-function drawCurrent(){
-    var actX = currentShape.row*squareSide;
-    var actY = currentShape.col*squareSide;
-    drawSquare(actY, actX, currentShape.color);
-
-}
-
-function moveCurrentDown(){
-    currentShape.row ++;
-}
-
-function canMoveRight(){
-    //returns true if position of currentShape can change to right
-    //it can if
-    //1. shape is still falling and
-    //2. there is no shape where currentShape wants to move and
-    //3. there is still board where it wants to move
-    return ((gameState == gameStates[1])&&
-    (currentShape.col +1 < boardWidth) &&
-    (board[currentShape.row][currentShape.col +1])== 0);
-}
-
-function canMoveLeft(){
-    //returns true if position of currentShape can change to left
-    //it can if
-    //1. shape is still falling and
-    //2. there is no shape where currentShape wants to move and
-    //3. there is still board where it wants to move
-    return ((gameState == gameStates[1])&&(currentShape.col -1 >= 0)&&
-        ((board[currentShape.row][currentShape.col-1])== 0));
-    
-}
-
-function moveCurrentRight(){
-    if(canMoveRight()){
-        clearPrevious();             
-        currentShape.col ++;
-        drawCurrent();  
-    }         
-        
-}
-
-function moveCurrentLeft(){
-    if(canMoveLeft()){
-        clearPrevious();                 
-        currentShape.col --;
-        drawCurrent();           
-    
-    }
-}
 
 function setShapeOnBoard(){
     //block has landed, set it on the board
     board[currentShape.row][currentShape.col] = 1;
+    console.log("shape added at ",currentShape.row,", ",currentShape.col);
 }
 
-function hasCurrentShapeLanded(){
-    //return true if space directly under currentShape is occupied
-    //or there is no board under the shape
-    return ((currentShape.row +1) == boardHeight ||
-    (board[currentShape.row +1][currentShape.col] == 1));
-}
+
 
 function isSpaceForNewShape(){
     //returns true if there is shape for a new shape to start falling
     //TODO will be different with different shapes
     return (board[0][Math.floor(boardWidth/2)] == 0);
 }
-
+/*
 function loopStep(){
     switch(gameState){
         case gameStates[0]: //fallen
-            //check if there is no space left for the next shape
+            //check if there is any space left for the next shape
             if(isSpaceForNewShape()){
                 //keep playing
                 //create a new shape
                 var newShape = {row: 0,
                             col: Math.floor(boardWidth/2),
                             color:colors[0]};
+
+                shapeX = Math.floor(boardWidth/2);
+                shapeY = 0;
                 //set it as current
                 currentShape = newShape;
 
@@ -176,7 +129,7 @@ function loopStep(){
         break;
     }
 }
-
+*/
 function afterGameOver(){
     console.log("after game over");
     gameOverMessage.style.display = "block";
@@ -237,15 +190,16 @@ function createBoardArray(){
     }
 
 }
-function setup(){
-    document.addEventListener("keydown", keyDownHandler, false);
-    createBoardArray();
-    drawBoard();
-}
+
 function playLoop(){
     setInterval(loopStep, 1000);
 }
+
+function timestamp() {
+    return window.performance && window.performance.now ? 
+    window.performance.now() : new Date().getTime();
+}
 /*------------------------------------------*/
 /*----------------main----------------------*/ 
-setup();
-playLoop();
+//setup();
+//playLoop();
