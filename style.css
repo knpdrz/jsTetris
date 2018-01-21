@@ -1,0 +1,20 @@
+* { 	
+	padding: 0; 
+	margin: 0;
+	font-family: 'Roboto';
+	box-sizing: border-box;
+}
+canvas { 
+    background-color: black;
+	display: block; 
+	margin: 0 auto; 
+}
+.gameFrame{
+	padding: 1%;
+	text-align: center
+}
+
+#gameOverMessage{
+	display:none;
+	text-align: center;
+}
